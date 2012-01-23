@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+# A script to audit a release area to  make sure it follows all the
+# rules.
+#
+# rules
+#   1. no CVS directories
+#   2. really, would like to confirm what's here IS in CVS and IS tagged
+#      and MATCHES PackageVersions content
+#
+
+
+echo "auditrel: not written, so approving the release"
+exit 0

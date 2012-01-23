@@ -1,0 +1,101 @@
+#!/bin/sh
+
+########################################################################
+#
+# Imports a relase from a peer into the release area.  Options:
+#
+# Usage:
+#    importrel -r <releaseName> -h <hostname>
+#
+#    Finds <releaseName> in release area of <hostname> and copies into
+#    our release area.
+# 
+#    Names should jsut be names like 0.2.3, not full paths
+#
+# ASSUMES:
+#     Assumes you can ssh to the host
+#
+#
+# History:
+#    23 Dec 03 efrank    first version
+#
+# BUGS:
+#
+########################################################################
+
+
+#-----------------------------------------------------------------------
+#++ vars
+
+newReleaseName=""
+hostName=""
+
+
+#-----------------------------------------------------------------------
+#++ process options
+
+   set -- `getopt r:h: $*`
+   if [ $? = 0 ]; then
+       while [ $1 != -- ]
+	 do
+	 case $1 in
+	     -r) newReleaseName=$2; shift;;
+	     -h) hostName=$2; shift;;
+	 esac
+	 shift
+       done
+       shift
+   fi
+
+
+#-----------------------------------------------------------------------
+#++ check for correct number of arguments
+#
+   if [ "$#" -ne 0 ]; then
+       echo "Usage: importrel -r <releaseName> -h <hostname>"
+       exit 2
+   fi
+
+   echo $newReleaseName
+   echo $hostName
+
+   if [ x$newReleaseName = "x" ]; then
+       echo "You must give a release name"
+       exit 2
+   fi
+
+   if [ x$hostName = "x" ]; then
+       echo "You must give a hostname"
+       exit 2
+   fi
+
+#-----------------------------------------------------------------------
+#++ Sanity check the release
+
+   if [ -z "$RTROOT" ]; then
+       echo "No RTROOT set"
+       exit 2
+   fi
+
+   releaseArea=$RTROOT/dist/releases
+
+   if [ ! -r "$releaseArea" ]; then
+       echo "No release Areas: " $releaseArea
+       exit 2
+   fi
+
+   newRelease=$releaseArea/$newReleaseName
+
+   if [ -r $newRelease ]; then
+       echo "Release $newReleaseName already exists in release area, $releaseArea"
+       exit 2
+   fi
+
+#-----------------------------------------------------------------------
+#++ OK, copy it over.
+
+   # Warp us there, Mr. Sulu
+
+   cd $releaseArea
+   ssh $hostName "(cd \$RTROOT/dist/releases; tar czf - $newReleaseName)" | tar xzf -
+

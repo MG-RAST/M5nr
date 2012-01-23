@@ -1,0 +1,190 @@
+#!/bin/sh
+
+########################################################################
+# Given a definition, creates a new release.  Eventually, we want 
+# something more sophisticated, but for now we just read a file
+# that defines all the packages to include in the release, along with
+# tag names.  An example of more sophisticated would be to help the
+# user form that file by looking at a test release and the underlying
+# release it is based upon.
+#
+# Usage:
+#    newrel <releaseName> -f <PackageVersionsFileName>
+#        makes new dir called <releaseName> in release area, copies
+#        the PackageVersionsFile there and fills the directory
+#        with packages as specified.
+#
+#        Note, <releaseName> is just name, e.g., 1.2.3. No path.
+#
+# PackageVersions is a list of
+#  <PackageName> <version>
+# e.g.,
+#   ReleaseTools V00-00-05
+#   FigCommon V00-00-01
+#   FigKernelPackages V00-00-02
+#   FigKernelScripts V00-00-01
+#   FigPeer2PeerTools V00-00-00
+#   FigWebPages V00-00-00
+#   FigWebServices V00-00-02
+########################################################################
+
+
+#-----------------------------------------------------------------------
+#++ vars
+
+releaseArea=""                     # $RTROOT/dist/releases, if RTROOT set
+packageVersionsFileName=""         # Command arg from user. 
+newReleaseName=""                  # Command arg passed by user.
+newReleasePathAndName=""           # $releaseArea/$newReleaseName 
+invokedFromDir=`pwd`
+
+
+#-----------------------------------------------------------------------
+#++ process options
+
+   set -- `getopt f: $*`
+   if [ $? = 0 ]; then
+       while [ $1 != -- ]
+	 do
+	 case $1 in
+	     -f) packageVersionsFileName=$2; shift;;
+	 esac
+	 shift
+       done
+       shift
+   fi
+   
+
+#-----------------------------------------------------------------------
+#++ check for correct number of arguments
+#
+   if [ "$#" -ne 1 ]; then
+       echo "Usage: newrel <releaseName> -f <PackageVersionsFileName>"
+       exit 2
+   fi
+   newReleaseName=$1
+
+   echo "Add code to enforce naming rules for release name...should be form i.j.k"
+   echo
+
+   if [ $packageVersionsFileName = "" ]; then
+       echo "You must give a PackageVersions file name via -f "
+       exit 2
+   fi
+
+#-----------------------------------------------------------------------
+# ++ Does the PackageVersionsFile exist?
+
+   if [ ! -r $packageVersionsFileName ]; then 
+       echo "PackageVersionsFile $packageVersionsFileName not readable"
+       exit 2
+   fi
+ 
+
+#-----------------------------------------------------------------------
+#++ Validate format of PackageVersions
+#   Require all packages have tag names.  None are HEAD
+
+   echo "Add code to Validate format of PackageVersions.  Require all packages have tag names.  None are HEAD"
+   echo
+
+#-----------------------------------------------------------------------
+#++ Sanity check the release
+
+   if [ -z "$RTROOT" ]; then
+       echo "No RTROOT set"
+       exit 2
+   fi
+
+   releaseArea=$RTROOT/dist/releases
+
+   if [ ! -r "$releaseArea" ]; then
+       echo "No release Areas: " $releaseArea
+       exit 2
+   fi
+
+   newReleasePathAndName=$releaseArea/$newReleaseName 
+
+   if [ -r $newReleasePathAndName ]; then
+       echo "Release $newReleaseName already exists in release area, $releaseArea"
+       exit 2
+   fi
+
+#-----------------------------------------------------------------------
+#++ OK, make the new release directory and put config file there
+#   and PackageVersions file 
+
+   # Don't know how PackageVersions file was specified to us.  Could be
+   # absolute path or not.  Just remember where we are so we can do the
+   # copy, below
+
+   invokedFromDir=`pwd`
+ 
+   # Warp us there, Mr. Sulu
+
+   cd $releaseArea
+   mkdir $newReleaseName
+
+   if [ ! -r $newReleaseName ]; then
+       echo "Failed to make new release directory"
+       exit 2
+   fi
+   
+   cd $newReleaseName
+
+   # put in a rgConfig that points to ourselves.  This will let us
+   # call other ReleaseTools tools to help us build this thing.
+
+   echo "baserelname=$newReleaseName" > rtConfig
+
+   if [ ! -r  rtConfig ]; then
+       echo "Failed to make rtConfig file...you clean up the mess"
+       exit 2
+   fi
+
+   # copy in the PackageVersions file.  Note that we make sure it
+   # goes in with the right name, "PackageVersions"
+
+   cd $invokedFromDir
+   cp -p $packageVersionsFileName $newReleasePathAndName/PackageVersions
+
+   installedPackageVersionsFile=$newReleasePathAndName/PackageVersions
+
+   cd $newReleasePathAndName
+
+#-----------------------------------------------------------------------
+#++ Load it with the packages.
+
+   # this uses the PackageVersions we just dumped in
+
+   cd $newReleasePathAndName
+   for pkg in `awk '{print $1 }' $installedPackageVersionsFile` ; do
+       echo getting $pkg
+       packageVer=`grep $pkg $installedPackageVersionsFile | awk '{print $2}'`
+       echo cvs co  -r $packageVer  $pkg
+       cvs co  -r $packageVer  $pkg
+   done
+
+#-----------------------------------------------------------------------
+#++ Now that we have the packages, make the directory structure for
+#  the release. We do that by deferring to the makefile in ReleaseTools.
+#  Since the version of ReleaseTools can change release to release, we
+#  use the info in the PackageVersions file we were called with.
+
+   cd $newReleasePathAndName
+   if [ -r ReleaseTools ]; then
+       cp -p ReleaseTools/Makefile.top Makefile
+       make installdirs
+   else
+       echo "WARNING: No ReleaseTools in PackageVersions.  You're going to regret it...continuing anyway."
+   fi
+
+
+#-----------------------------------------------------------------------
+#++ Zorch all the CVS directories.
+
+   cd $newReleasePathAndName
+
+   # brain fade...can't get -exec to work for me and am in rush:
+
+   rm -rf `find . -type d -name CVS -print`
