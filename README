@@ -1,0 +1,34 @@
+M5NR - A comprehensive non-redundant protein database
+
+The M5NR is an integration of many sequence databases into one single, searchable database (plus an index). A single similarity search (using BLAST or BLAT) will allow the user to retrieve similarities to several databases (e.g. NCBI’s nr, KEGGs database or the EGGnogs — see below for a complete list).
+
+Computing of sequence similarity results is becoming a limiting factor in metagenome analysis. Sequence similarity search results encoded in an open, exchangeable format distributed with the sequence sets have the potential to limit the needs for computational re-analysis of data sets. A prerequisite for sharing of similarity results is a common reference.
+
+M5nr mechanisms are used for automatically maintaining this comprehensive non-redundant protein database and creating a quarterly release of this resource. In addition we present tools for translating similarity searches into many namespaces e.g. KEGG or NCBI’s GenBank.
+
+M5 is a Genomic Standards Consortium (GSC) initiative.
+Funding
+
+Funding for this project was provided under DOE grant, DOE-BER-66314.
+Access
+
+Access to M5nr is available through:
+
+        the website at http://tools.metagenomics.anl.gov/m5nr/,
+        a RESTful API,
+        a script (m5nr-tools.pl) which uses our API and is run locally.
+
+Data Sources
+
+Databases from the following sites are part of the M5NR:
+
+    EBI: European Bioinformatics Institute
+    GO: Gene Ontology
+    JGI: Joint Genome Institute
+    KEGG: Kyoto Encyclopedia of Genes and Genomes
+    NCBI: National Center for Biotechnology Information
+    Phantome: Phage Annotation Tools and Methods
+    SEED: The SEED Project
+    UniProt: UniProt Knowledgebase
+    VBI: Virginia Bioinformatics Institute
+    eggNOG: evolutionary genealogy of genes: Non-supervised Orthologous Groups
