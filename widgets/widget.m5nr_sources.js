@@ -26,8 +26,25 @@
 	
 	var html = '\
 <h3>M5nr Data Sources</h3>\
-<p>Not yet implemented</p>';
+<p>The protein databases listed below were used to create the M5nr database.</p><div id="result" style="margin-top: 15px; text-align: center;"><img src="Retina/images/waiting.gif" style="width: 36px;"></div>';
 
+	jQuery.ajax( { dataType: "json",
+		       url: RetinaConfig.mgrast_api + '/m5nr/sources',
+		       method: "GET",
+		       success: function(data) {
+			   var html = '<table class="table table-striped table-hover table-condensed"><thead><tr><th>database</th><th>type</th><th>date</th></tr></thead><tbody>'
+			   for (var i=0; i<data.data.length; i++) {
+			       html += "<tr><td>"+data.data[i].source+"</td><td>"+data.data[i].type+"</td><td>"+data.data[i].download_date+"</td></tr>";
+			   }
+			   html += "</tbody></table>";
+
+			   document.getElementById('result').innerHTML = html;
+		       },
+		       error: function () {
+			   document.getElementById('result').innerHTML = "<div class='alert alert-error' style='width: 50%;'>The query could not be completed</div>";
+		       }
+		     });
+	
 	content.innerHTML = html;
     };
 })();

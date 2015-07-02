@@ -27,7 +27,7 @@
 	jQuery.extend(widget, params);
 	
 	var html = "\
-<h3>Searching within the M5NR</h3>\
+<h3>Searching within the M5nr</h3>\
 <p>Welcome to the web search of the M5nr. You can search for data associated with proteins from the following categories: source ids, functions, organisms, sequences, or md5 checksums. For function or organism annotaion, you can search for data with an exact match to your query, or for data that matches part of your query. It is possible to search for multiple types of data by entering a comma separated list of queries.</p>\
 <p>Choose a search category and enter a search query. Optionally select exact or partial match.</p>\
 <div id='message'></div>\
@@ -38,6 +38,7 @@
   <div style='width: 175px;'>\
     <div class='btn-group' data-toggle='buttons-radio'>\
       <button class='btn btn-mini active' data-toggle='button' id='accession_button' onclick='Retina.WidgetInstances.m5nr_search[1].type=\"accession\";'>source ID</button>\
+      <button class='btn btn-mini' data-toggle='button' id='alias_button' onclick='Retina.WidgetInstances.m5nr_search[1].type=\"alias\";'>alias</button>\
       <button class='btn btn-mini' data-toggle='button' id='function_button' onclick='Retina.WidgetInstances.m5nr_search[1].type=\"function\";'>function</button>\
       <button class='btn btn-mini' data-toggle='button' id='organism_button' onclick='Retina.WidgetInstances.m5nr_search[1].type=\"organism\";'>organism</button>\
       <button class='btn btn-mini' data-toggle='button' id='sequence_button' onclick='Retina.WidgetInstances.m5nr_search[1].type=\"sequence\";'>sequence</button>\
@@ -82,15 +83,16 @@
 </h3>\
 <div style="margin-left: 10px; margin-right: 10px;">\
   <ul>\
-    <li>search for a SEED id:<br><a href="#" onclick="Retina.WidgetInstances.m5nr_search[1].queryAPI(\'accession\', \'fig|171101.1.peg.262\');">fig|171101.1.peg.262</a><br><br></li>\
+    <li>search for a SEED id:<br><a href="#" onclick="Retina.WidgetInstances.m5nr_search[1].queryAPI(\'accession\', \'fig|768491.12.peg.226\');">fig|768491.12.peg.226</a><br><br></li>\
     <li>search for a KEGG id:<br><a href="#" onclick="Retina.WidgetInstances.m5nr_search[1].queryAPI(\'accession\', \'spv:SPH_0401\');">spv:SPH_0401</a><br><br></li>\
-    <li>search for multiple ids:<br><a href="#" onclick="Retina.WidgetInstances.m5nr_search[1].queryAPI(\'accession\', \'fig|171101.1.peg.262, spv:SPH_0401\');">fig|171101.1.peg.262, spv:SPH_0401</a><br><br></li>\
+    <li>search for multiple ids:<br><a href="#" onclick="Retina.WidgetInstances.m5nr_search[1].queryAPI(\'accession\', \'fig|768491.12.peg.226, spv:SPH_0401\');">fig|768491.12.peg.226, spv:SPH_0401</a><br><br></li>\
     <li>retrieve the sequence for an id:<br><a href="#" onclick="Retina.WidgetInstances.m5nr_search[1].queryAPI(\'accession\', \'NP_357856.1\');">NP_357856.1</a></li>\
   </ul>\
 </div>\
 ';
 	
 	sidebar.innerHTML = html_sidebar;
+
 	// check if a search got passed
 	if (Retina.cgiParam("search")) {
 	    document.getElementById('searchtext').value = Retina.cgiParam("search");
@@ -143,7 +145,7 @@
 	jQuery.ajax( { dataType: "json",
 		       url: url,
 		       method: "POST",
-		       data: '{"limit":10000,"data":["'+idlist.join('","')+'"]}',
+		       data: '{"limit":10000,"data":["'+idlist.join('","')+'"],"version":10}',
 		       processData: false,
 		       success: function(data) {
 			   Retina.WidgetInstances.m5nr_search[1].resultTable(data);
