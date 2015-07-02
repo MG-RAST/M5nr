@@ -1,8 +1,8 @@
 (function () {
     var widget = Retina.Widget.extend({
         about: {
-                title: "M5NR Download Widget",
-                name: "m5nr_download",
+                title: "M5NR Sources Widget",
+                name: "m5nr_sources",
                 author: "Tobias Paczian",
                 requires: [  ]
         }
@@ -13,7 +13,7 @@
     };
         
     widget.display = function (params) {
-        var widget = Retina.WidgetInstances.m5nr_download[1];
+        var widget = Retina.WidgetInstances.m5nr_sources[1];
 	
 	if (params && params.main) {
 	    widget.main = params.main;
