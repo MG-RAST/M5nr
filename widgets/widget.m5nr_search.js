@@ -13,6 +13,7 @@
     };
 
     widget.type = "accession";
+    widget.sourcesLoaded = false;
         
     widget.display = function (params) {
         var widget = Retina.WidgetInstances.m5nr_search[1];
@@ -25,6 +26,27 @@
 	var sidebar = widget.sidebar;
 
 	jQuery.extend(widget, params);
+
+	if (! widget.sourcesLoaded) {
+	    content.innerHTML = "<img src='Retina/images/waiting.gif' style='width: 24px; text-align: center;'>";
+	    jQuery.ajax({
+		dataType: 'json',
+		method: "GET",
+		url: RetinaConfig['mgrast_api'] + "/m5nr/sources?version=1",
+		success: function (data) {
+		    var widget = Retina.WidgetInstances.m5nr_search[1];
+		    var s = {};
+		    for (var i=0; i<data.data.length; i++) {
+			s[data.data[i].source] = data.data[i];
+		    }
+		    widget.sources = s;
+		    widget.sourcesLoaded = true;
+		    widget.display();
+		}}).fail(function(xhr, error) {
+		    alert("could not reach API server");
+		});
+	    return;
+	}
 	
 	var html = "\
 <h3>Searching within the M5nr</h3>\
@@ -83,9 +105,9 @@
 </h3>\
 <div style="margin-left: 10px; margin-right: 10px;">\
   <ul>\
-    <li>search for a SEED id:<br><a href="#" onclick="Retina.WidgetInstances.m5nr_search[1].queryAPI(\'accession\', \'fig|768491.12.peg.226\');">fig|768491.12.peg.226</a><br><br></li>\
+    <li>search for a SEED id:<br><a href="#" onclick="Retina.WidgetInstances.m5nr_search[1].queryAPI(\'accession\', \'fig|83333.1.peg.4\');">fig|83333.1.peg.4</a><br><br></li>\
     <li>search for a KEGG id:<br><a href="#" onclick="Retina.WidgetInstances.m5nr_search[1].queryAPI(\'accession\', \'spv:SPH_0401\');">spv:SPH_0401</a><br><br></li>\
-    <li>search for multiple ids:<br><a href="#" onclick="Retina.WidgetInstances.m5nr_search[1].queryAPI(\'accession\', \'fig|768491.12.peg.226, spv:SPH_0401\');">fig|768491.12.peg.226, spv:SPH_0401</a><br><br></li>\
+    <li>search for multiple ids:<br><a href="#" onclick="Retina.WidgetInstances.m5nr_search[1].queryAPI(\'accession\', \'fig|83333.1.peg.4, spv:SPH_0401\');">fig|83333.1.peg.4, spv:SPH_0401</a><br><br></li>\
     <li>retrieve the sequence for an id:<br><a href="#" onclick="Retina.WidgetInstances.m5nr_search[1].queryAPI(\'accession\', \'NP_357856.1\');">NP_357856.1</a></li>\
   </ul>\
 </div>\
@@ -105,7 +127,7 @@
 	var tableData = [];
 	for (var i=0; i<data.data.length; i++) {
 	    var d = data.data[i];
-	    tableData.push([d.source, d.function, d.ncbi_tax_id, d.accession, d.type, d.organism, d.md5, d.alias ? d.alias.join(", ") : "-" ]);
+	    tableData.push(["<a href='"+widget.sources[d.source].url+"' target=_blank>"+d.source+"</a>", d.function, d.ncbi_tax_id, "<a href='"+widget.sources[d.source].link+d.accession+"' target=_blank>"+d.accession+"</a>", d.type, d.organism, d.md5, d.alias ? d.alias.join(", ") : "-" ]);
 	}
 	delete Retina.RendererInstances.table[1];
 	Retina.Renderer.create("table", {
@@ -114,6 +136,7 @@
 	    filter_autodetect: true,
 	    sort_autodetect: true,
 	    minwidths: [85,100,120,105,70,100,1,70],
+	    show_export: true,
 	    invisible_columns: { 6: true },
 	    data: { data: tableData, header: [ "source", "function", "NCBI tax ID", "accession", "type", "organism", "md5", "alias" ] },
 	}).render();
